@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  
+  redis:
+    image: redis
+    command: redis-server --requirepass Redis2019!
+    volumes:
+      - .docker/data-redis:/data
+    ports:
+      - "6379:6379"
+  
+  app1:
+    image: jheffh2012/poc-redis:latest
+    volumes:
+      - .docker/app1/appsettings.json:/app/appsettings.json
+    # ports:
+    #   - "8001:80"
+
+  app2:
+    image: jheffh2012/poc-redis:latest
+    volumes:
+      - .docker/app2/appsettings.json:/app/appsettings.json
+    # ports:
+    #   - "8002:80"
+
+  nginx-server:
+    image: nginx:alpine
+    container_name: webserver
+    restart: unless-stopped
+    tty: true
+    links:
+      - app1
+      - app2
+    volumes:
+      - .docker/nginx/conf.d/:/etc/nginx/conf.d/
+    ports:
+      - "80:80"
+      - "443:443"
+
+volumes:
+  dbdata:
+    driver: local
